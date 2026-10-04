@@ -1,8 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
+import Link from 'next/link';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+export interface Comment {
+    id: number;
+    postId: number;
+    author: string;
+    content: string;
+    createdAt: string;
+}
 
 export interface Post {
     id: number;
@@ -11,6 +21,7 @@ export interface Post {
     author: string;
     category?: string;
     image?: string;
+    comments?: Comment[];
     createdAt?: string;
     updatedAt?: string;
 }
@@ -53,8 +64,17 @@ const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
 };
 
 export default function PostsPage() {
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
+
+    // NÂNG CAO 2: React Query (TanStack Query) - Quản lý Cache & Fetching tự động
+    const { data: posts = [], isLoading: loading } = useQuery<Post[]>({
+        queryKey: ['posts'],
+        queryFn: async () => {
+            const res = await api.get('/api/posts');
+            return res.data;
+        },
+    });
+
     const [selectedCategory, setSelectedCategory] = useState('ALL');
     const [searchQuery, setSearchQuery] = useState('');
     const [showSearch, setShowSearch] = useState(false);
@@ -70,36 +90,108 @@ export default function PostsPage() {
     const [author, setAuthor] = useState('');
     const [category, setCategory] = useState('BUSINESS');
     const [image, setImage] = useState(HAGUE_PRESET_IMAGES[0].url);
-    const [submitting, setSubmitting] = useState(false);
 
-    // Modal chỉnh sửa bài viết (PUT)
+    // Modal chỉnh sửa bài viết (PUT - Nâng cao 1)
     const [editingPost, setEditingPost] = useState<Post | null>(null);
     const [editTitle, setEditTitle] = useState('');
     const [editContent, setEditContent] = useState('');
     const [editAuthor, setEditAuthor] = useState('');
     const [editCategory, setEditCategory] = useState('BUSINESS');
     const [editImage, setEditImage] = useState('');
-    const [isUpdating, setIsUpdating] = useState(false);
 
     // Modal đọc chi tiết bài viết (Reading View)
     const [readingPost, setReadingPost] = useState<Post | null>(null);
 
-    // Tải danh sách bài viết từ Backend
-    const fetchPosts = async () => {
-        try {
-            setLoading(true);
-            const res = await api.get('/api/posts');
-            setPosts(res.data);
-        } catch {
-            toast.error('Không thể kết nối máy chủ backend!');
-        } finally {
-            setLoading(false);
-        }
-    };
+    // NÂNG CAO 4: State bình luận độc giả
+    const [commentAuthor, setCommentAuthor] = useState('');
+    const [commentContent, setCommentContent] = useState('');
 
-    useEffect(() => {
-        fetchPosts();
-    }, []);
+    // NÂNG CAO 2: Mutation Thêm bài viết mới
+    const createPostMutation = useMutation({
+        mutationFn: async (newPostData: { title: string; content: string; author: string; category: string; image: string }) => {
+            const res = await api.post('/api/posts', newPostData);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            toast.success('Đăng bài thành công!');
+            setTitle('');
+            setContent('');
+            setAuthor('');
+            setCategory('BUSINESS');
+            setImage(HAGUE_PRESET_IMAGES[0].url);
+            setIsCreateOpen(false);
+        },
+        onError: (err: unknown) => {
+            const error = err as { response?: { data?: { error?: string } } };
+            toast.error(error.response?.data?.error || 'Có lỗi xảy ra khi tạo bài viết!');
+        }
+    });
+
+    // NÂNG CAO 1 & 2: Mutation Cập nhật bài viết (PUT)
+    const updatePostMutation = useMutation({
+        mutationFn: async ({ id, data }: { id: number; data: Partial<Post> }) => {
+            const res = await api.put(`/api/posts/${id}`, data);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            toast.success('Cập nhật bài viết thành công!');
+            setEditingPost(null);
+        },
+        onError: (err: unknown) => {
+            const error = err as { response?: { data?: { error?: string } } };
+            toast.error(error.response?.data?.error || 'Cập nhật thất bại!');
+        }
+    });
+
+    // NÂNG CAO 2: Mutation Xoá bài viết (DELETE)
+    const deletePostMutation = useMutation({
+        mutationFn: async (id: number) => {
+            const res = await api.delete(`/api/posts/${id}`);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            toast.success('Đã xoá bài viết', { icon: '🗑️' });
+        },
+        onError: () => {
+            toast.error('Xoá thất bại, đang hoàn tác dữ liệu!');
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+        }
+    });
+
+    // NÂNG CAO 4: Mutation Thêm bình luận
+    const addCommentMutation = useMutation({
+        mutationFn: async ({ postId, author, content }: { postId: number; author: string; content: string }) => {
+            const res = await api.post(`/api/posts/${postId}/comments`, { author, content });
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            toast.success('Đã gửi bình luận thành công!');
+            setCommentContent('');
+        },
+        onError: (err: unknown) => {
+            const error = err as { response?: { data?: { error?: string } } };
+            toast.error(error.response?.data?.error || 'Gửi bình luận thất bại!');
+        }
+    });
+
+    // NÂNG CAO 4: Mutation Xoá bình luận
+    const deleteCommentMutation = useMutation({
+        mutationFn: async (commentId: number) => {
+            const res = await api.delete(`/api/comments/${commentId}`);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            toast.success('Đã xoá bình luận', { icon: '🗑️' });
+        },
+        onError: () => {
+            toast.error('Xoá bình luận thất bại!');
+        }
+    });
 
     // Xử lý upload ảnh từ máy tính (FileReader -> Base64 data URL)
     const handleFileUpload = (file: File, isEdit: boolean = false) => {
@@ -125,40 +217,21 @@ export default function PostsPage() {
         reader.readAsDataURL(file);
     };
 
-    // Xử lý tạo bài viết mới (Tiết 2)
-    const handleCreatePost = async (e: React.FormEvent) => {
+    // Xử lý tạo bài viết mới (Tiết 2 & Nâng cao 2)
+    const handleCreatePost = (e: React.FormEvent) => {
         e.preventDefault();
         if (!title.trim() || !content.trim() || !author.trim()) {
             toast.error('Vui lòng nhập đầy đủ tiêu đề, nội dung và tác giả!');
             return;
         }
 
-        try {
-            setSubmitting(true);
-            const res = await api.post('/api/posts', {
-                title: title.trim(),
-                content: content.trim(),
-                author: author.trim(),
-                category: category.toUpperCase(),
-                image: image || HAGUE_PRESET_IMAGES[0].url,
-            });
-
-            setPosts((prev) => [res.data, ...prev]);
-            toast.success('Đăng bài thành công!');
-
-            // Reset
-            setTitle('');
-            setContent('');
-            setAuthor('');
-            setCategory('BUSINESS');
-            setImage(HAGUE_PRESET_IMAGES[0].url);
-            setIsCreateOpen(false);
-        } catch (err: unknown) {
-            const error = err as { response?: { data?: { error?: string } } };
-            toast.error(error.response?.data?.error || 'Có lỗi xảy ra khi tạo bài viết!');
-        } finally {
-            setSubmitting(false);
-        }
+        createPostMutation.mutate({
+            title: title.trim(),
+            content: content.trim(),
+            author: author.trim(),
+            category: category.toUpperCase(),
+            image: image || HAGUE_PRESET_IMAGES[0].url,
+        });
     };
 
     // Mở modal sửa bài viết (Nâng cao 1) - Đảm bảo đóng Reading modal
@@ -167,7 +240,7 @@ export default function PostsPage() {
             e.stopPropagation();
             e.preventDefault();
         }
-        setReadingPost(null); // Đóng ngay modal đọc bài để không bị che khuất
+        setReadingPost(null);
         setEditingPost(post);
         setEditTitle(post.title);
         setEditContent(post.content);
@@ -177,7 +250,7 @@ export default function PostsPage() {
     };
 
     // Xử lý cập nhật bài viết (PUT /api/posts/:id)
-    const handleUpdatePost = async (e: React.FormEvent) => {
+    const handleUpdatePost = (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingPost) return;
 
@@ -186,51 +259,50 @@ export default function PostsPage() {
             return;
         }
 
-        try {
-            setIsUpdating(true);
-            const res = await api.put(`/api/posts/${editingPost.id}`, {
+        updatePostMutation.mutate({
+            id: editingPost.id,
+            data: {
                 title: editTitle.trim(),
                 content: editContent.trim(),
                 author: editAuthor.trim(),
                 category: editCategory.toUpperCase(),
                 image: editImage,
-            });
-
-            // Cập nhật lại trong state tức thì
-            setPosts((prev) =>
-                prev.map((p) => (p.id === editingPost.id ? res.data : p))
-            );
-
-            toast.success('Cập nhật bài viết thành công!');
-            setEditingPost(null);
-        } catch (err: unknown) {
-            const error = err as { response?: { data?: { error?: string } } };
-            toast.error(error.response?.data?.error || 'Cập nhật thất bại!');
-        } finally {
-            setIsUpdating(false);
-        }
+            }
+        });
     };
 
-    // Xử lý xóa bài viết với Optimistic Update (Tiết 4-5 - Bắt buộc)
-    const handleDeletePost = async (id: number, e?: React.MouseEvent) => {
+    // Xử lý xóa bài viết (Tiết 4-5 & Nâng cao 2)
+    const handleDeletePost = (id: number, e?: React.MouseEvent) => {
         if (e) {
             e.stopPropagation();
             e.preventDefault();
         }
         if (!confirm('Bạn chắc chắn muốn xoá bài viết này khỏi toà soạn?')) return;
+        if (readingPost?.id === id) setReadingPost(null);
+        if (editingPost?.id === id) setEditingPost(null);
 
-        try {
-            // Optimistic update
-            setPosts((prev) => prev.filter((p) => p.id !== id));
-            if (readingPost?.id === id) setReadingPost(null);
-            if (editingPost?.id === id) setEditingPost(null);
+        deletePostMutation.mutate(id);
+    };
 
-            toast.success('Đã xoá bài viết', { icon: '🗑️' });
-            await api.delete(`/api/posts/${id}`);
-        } catch {
-            toast.error('Xoá thất bại, đang hoàn tác dữ liệu!');
-            fetchPosts(); // Rollback
+    // NÂNG CAO 4: Xử lý gửi bình luận
+    const handleSendComment = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!readingPost) return;
+        if (!commentAuthor.trim() || !commentContent.trim()) {
+            toast.error('Vui lòng nhập họ tên và nội dung bình luận!');
+            return;
         }
+        addCommentMutation.mutate({
+            postId: readingPost.id,
+            author: commentAuthor.trim(),
+            content: commentContent.trim(),
+        });
+    };
+
+    // NÂNG CAO 4: Xử lý xoá bình luận
+    const handleDeleteComment = (commentId: number) => {
+        if (!confirm('Bạn chắc chắn muốn xoá bình luận này?')) return;
+        deleteCommentMutation.mutate(commentId);
     };
 
     // Định dạng ngày chuẩn tạp chí
@@ -293,6 +365,9 @@ export default function PostsPage() {
 
     // Lấy nhãn của category đang chọn
     const currentCategoryLabel = NAV_CATEGORIES.find(c => c.id === selectedCategory)?.label || selectedCategory;
+
+    // NÂNG CAO 4: Đồng bộ bài viết đang đọc với dữ liệu từ TanStack Query
+    const currentReadingPost = posts.find(p => p.id === readingPost?.id) || readingPost;
 
     return (
         <div className="min-h-screen bg-white text-[#111111] antialiased">
@@ -476,37 +551,50 @@ export default function PostsPage() {
                                         className="group flex flex-col justify-between border-b border-gray-100 pb-6"
                                     >
                                         <div>
-                                            <div
-                                                onClick={() => setReadingPost(post)}
-                                                className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100 mb-3 cursor-pointer rounded-sm"
+                                            <Link
+                                                href={`/posts/${post.id}`}
+                                                className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100 mb-3 cursor-pointer rounded-sm block"
                                             >
                                                 <img
                                                     src={post.image || HAGUE_PRESET_IMAGES[0].url}
                                                     alt={post.title}
                                                     className="w-full h-full object-cover group-hover:scale-103 transition duration-300"
                                                     onError={handleImageError} />
-                                            </div>
+                                            </Link>
                                             <span className="text-[11px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                                 {post.category || 'TIN TỨC'}
                                             </span>
-                                            <h3
-                                                onClick={() => setReadingPost(post)}
-                                                className="text-[17px] font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-1 leading-snug cursor-pointer line-clamp-2"
-                                            >
-                                                {post.title}
-                                            </h3>
+                                            <Link href={`/posts/${post.id}`}>
+                                                <h3 className="text-[17px] font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-1 leading-snug cursor-pointer line-clamp-2">
+                                                    {post.title}
+                                                </h3>
+                                            </Link>
                                             <p className="text-[13px] text-[#555555] line-clamp-3 mt-2 leading-relaxed">
                                                 {post.content}
                                             </p>
                                         </div>
 
-                                        <div className="flex items-center justify-between pt-4 mt-2 border-t border-gray-100 text-[12px] text-[#888888]">
-                                            <div>
+                                        <div className="flex items-center justify-between pt-4 mt-2 border-t border-gray-100 text-[12px] text-[#888888] flex-wrap gap-2">
+                                            <div className="flex items-center gap-1.5 flex-wrap">
                                                 <span className="font-semibold text-gray-900">{post.author}</span>
                                                 <span className="mx-1">·</span>
                                                 <span>{formatDate(post.createdAt)}</span>
+                                                <span className="mx-1">·</span>
+                                                <Link
+                                                    href={`/posts/${post.id}#comments`}
+                                                    className="inline-flex items-center gap-1 text-[#0073e6] hover:text-white hover:bg-[#0073e6] bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-bold transition cursor-pointer"
+                                                    title="Bấm để xem chi tiết bài viết và danh sách bình luận"
+                                                >
+                                                    💬 {post.comments?.length || 0}
+                                                </Link>
                                             </div>
                                             <div className="flex items-center gap-1.5">
+                                                <Link
+                                                    href={`/posts/${post.id}`}
+                                                    className="text-[11px] text-[#0073e6] hover:text-white hover:bg-[#0073e6] px-2 py-0.5 rounded bg-blue-50 border border-blue-200 font-medium transition cursor-pointer"
+                                                >
+                                                    Chi tiết »
+                                                </Link>
                                                 <button
                                                     onClick={(e) => handleOpenEdit(post, e)}
                                                     className="text-[11px] text-gray-500 hover:text-[#0073e6] px-2 py-0.5 rounded bg-gray-50 hover:bg-blue-50 border border-gray-200 cursor-pointer"
@@ -540,31 +628,46 @@ export default function PostsPage() {
                                 {heroLeft1 && (
                                     <article className="group flex flex-col justify-between h-full">
                                         <div>
-                                            <div
-                                                onClick={() => setReadingPost(heroLeft1)}
-                                                className="relative aspect-[1.35/1] w-full overflow-hidden bg-gray-100 mb-3 cursor-pointer"
+                                            <Link
+                                                href={`/posts/${heroLeft1.id}`}
+                                                className="relative aspect-[1.35/1] w-full overflow-hidden bg-gray-100 mb-3 cursor-pointer block"
                                             >
                                                 <img
                                                     src={heroLeft1.image || HAGUE_PRESET_IMAGES[1].url}
                                                     alt={heroLeft1.title}
                                                     className="w-full h-full object-cover group-hover:scale-103 transition duration-300"
                                                     onError={handleImageError} />
-                                            </div>
+                                            </Link>
                                             <span className="text-[11px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                                 {heroLeft1.category || 'BOOKS'}
                                             </span>
-                                            <h3
-                                                onClick={() => setReadingPost(heroLeft1)}
-                                                className="text-[17px] font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-1 leading-snug cursor-pointer line-clamp-2"
-                                            >
-                                                {heroLeft1.title}
-                                            </h3>
+                                            <Link href={`/posts/${heroLeft1.id}`}>
+                                                <h3 className="text-[17px] font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-1 leading-snug cursor-pointer line-clamp-2">
+                                                    {heroLeft1.title}
+                                                </h3>
+                                            </Link>
                                         </div>
-                                        <div className="flex items-center justify-between pt-2">
-                                            <span className="text-[12px] text-[#888888]">
-                                                {formatDate(heroLeft1.createdAt)}
-                                            </span>
+                                        <div className="flex items-center justify-between pt-2 flex-wrap gap-2">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-[12px] text-[#888888]">
+                                                    {formatDate(heroLeft1.createdAt)}
+                                                </span>
+                                                <span>·</span>
+                                                <Link
+                                                    href={`/posts/${heroLeft1.id}#comments`}
+                                                    className="inline-flex items-center gap-1 text-[#0073e6] hover:text-white hover:bg-[#0073e6] bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded text-[11px] font-bold transition cursor-pointer"
+                                                    title="Bấm để xem bình luận"
+                                                >
+                                                    💬 {heroLeft1.comments?.length || 0}
+                                                </Link>
+                                            </div>
                                             <div className="flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition">
+                                                <Link
+                                                    href={`/posts/${heroLeft1.id}`}
+                                                    className="text-[11px] text-[#0073e6] hover:text-white hover:bg-[#0073e6] px-1.5 py-0.5 rounded bg-blue-50 border border-blue-200 transition font-medium"
+                                                >
+                                                    Chi tiết »
+                                                </Link>
                                                 <button
                                                     onClick={(e) => handleOpenEdit(heroLeft1, e)}
                                                     className="text-[11px] text-gray-500 hover:text-[#0073e6] px-1.5 py-0.5 rounded bg-gray-50 hover:bg-blue-50 border border-gray-200 cursor-pointer"
@@ -585,31 +688,46 @@ export default function PostsPage() {
                                 {heroLeft2 && (
                                     <article className="group flex flex-col justify-between h-full pt-4 border-t lg:border-t-0 border-[#e5e5e5]">
                                         <div>
-                                            <div
-                                                onClick={() => setReadingPost(heroLeft2)}
-                                                className="relative aspect-[1.35/1] w-full overflow-hidden bg-gray-100 mb-3 cursor-pointer"
+                                            <Link
+                                                href={`/posts/${heroLeft2.id}`}
+                                                className="relative aspect-[1.35/1] w-full overflow-hidden bg-gray-100 mb-3 cursor-pointer block"
                                             >
                                                 <img
                                                     src={heroLeft2.image || HAGUE_PRESET_IMAGES[2].url}
                                                     alt={heroLeft2.title}
                                                     className="w-full h-full object-cover group-hover:scale-103 transition duration-300"
                                                     onError={handleImageError} />
-                                            </div>
+                                            </Link>
                                             <span className="text-[11px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                                 {heroLeft2.category || 'POLITICS'}
                                             </span>
-                                            <h3
-                                                onClick={() => setReadingPost(heroLeft2)}
-                                                className="text-[17px] font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-1 leading-snug cursor-pointer line-clamp-2"
-                                            >
-                                                {heroLeft2.title}
-                                            </h3>
+                                            <Link href={`/posts/${heroLeft2.id}`}>
+                                                <h3 className="text-[17px] font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-1 leading-snug cursor-pointer line-clamp-2">
+                                                    {heroLeft2.title}
+                                                </h3>
+                                            </Link>
                                         </div>
-                                        <div className="flex items-center justify-between pt-2">
-                                            <span className="text-[12px] text-[#888888]">
-                                                {formatDate(heroLeft2.createdAt)}
-                                            </span>
+                                        <div className="flex items-center justify-between pt-2 flex-wrap gap-2">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-[12px] text-[#888888]">
+                                                    {formatDate(heroLeft2.createdAt)}
+                                                </span>
+                                                <span>·</span>
+                                                <Link
+                                                    href={`/posts/${heroLeft2.id}#comments`}
+                                                    className="inline-flex items-center gap-1 text-[#0073e6] hover:text-white hover:bg-[#0073e6] bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded text-[11px] font-bold transition cursor-pointer"
+                                                    title="Bấm để xem bình luận"
+                                                >
+                                                    💬 {heroLeft2.comments?.length || 0}
+                                                </Link>
+                                            </div>
                                             <div className="flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition">
+                                                <Link
+                                                    href={`/posts/${heroLeft2.id}`}
+                                                    className="text-[11px] text-[#0073e6] hover:text-white hover:bg-[#0073e6] px-1.5 py-0.5 rounded bg-blue-50 border border-blue-200 transition font-medium"
+                                                >
+                                                    Chi tiết »
+                                                </Link>
                                                 <button
                                                     onClick={(e) => handleOpenEdit(heroLeft2, e)}
                                                     className="text-[11px] text-gray-500 hover:text-[#0073e6] px-1.5 py-0.5 rounded bg-gray-50 hover:bg-blue-50 border border-gray-200 cursor-pointer"
@@ -632,37 +750,51 @@ export default function PostsPage() {
                             {heroMain && (
                                 <div className="lg:col-span-6 px-0 lg:px-3 flex flex-col justify-between">
                                     <article className="group flex flex-col items-center text-center">
-                                        <div
-                                            onClick={() => setReadingPost(heroMain)}
-                                            className="relative w-full aspect-[1/0.95] overflow-hidden bg-gray-100 mb-5 cursor-pointer"
+                                        <Link
+                                            href={`/posts/${heroMain.id}`}
+                                            className="relative w-full aspect-[1/0.95] overflow-hidden bg-gray-100 mb-5 cursor-pointer block"
                                         >
                                             <img
                                                 src={heroMain.image || HAGUE_PRESET_IMAGES[0].url}
                                                 alt={heroMain.title}
                                                 className="w-full h-full object-cover group-hover:scale-102 transition duration-500"
                                                 onError={handleImageError} />
-                                        </div>
+                                        </Link>
 
                                         <span className="text-[11px] font-bold tracking-widest text-[#0073e6] uppercase mb-2">
                                             {heroMain.category || 'TECH'}
                                         </span>
 
-                                        <h2
-                                            onClick={() => setReadingPost(heroMain)}
-                                            className="text-2xl sm:text-[30px] font-bold text-[#111111] group-hover:text-[#0073e6] transition leading-tight mb-3 max-w-lg cursor-pointer"
-                                        >
-                                            {heroMain.title}
-                                        </h2>
+                                        <Link href={`/posts/${heroMain.id}`}>
+                                            <h2 className="text-2xl sm:text-[30px] font-bold text-[#111111] group-hover:text-[#0073e6] transition leading-tight mb-3 max-w-lg cursor-pointer">
+                                                {heroMain.title}
+                                            </h2>
+                                        </Link>
 
                                         <p className="text-[13px] text-[#555555] line-clamp-3 max-w-lg leading-relaxed mb-4">
                                             {heroMain.content}
                                         </p>
 
-                                        <div className="text-[12px] text-[#888888] font-normal flex items-center justify-center gap-2">
+                                        <div className="text-[12px] text-[#888888] font-normal flex items-center justify-center gap-2 flex-wrap">
                                             <span>{formatDate(heroMain.createdAt)}</span>
                                             <span>·</span>
                                             <span className="text-[#111111] font-semibold">{heroMain.author}</span>
+                                            <span>·</span>
+                                            <Link
+                                                href={`/posts/${heroMain.id}#comments`}
+                                                className="inline-flex items-center gap-1 text-[#0073e6] hover:text-white hover:bg-[#0073e6] bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-bold transition cursor-pointer"
+                                                title="Bấm để xem bình luận"
+                                            >
+                                                💬 {heroMain.comments?.length || 0} bình luận
+                                            </Link>
                                             <span className="mx-1">|</span>
+                                            <Link
+                                                href={`/posts/${heroMain.id}`}
+                                                className="text-[#0073e6] hover:underline cursor-pointer font-semibold"
+                                            >
+                                                Xem chi tiết »
+                                            </Link>
+                                            <span>·</span>
                                             <button
                                                 onClick={(e) => handleOpenEdit(heroMain, e)}
                                                 className="text-[#0073e6] hover:underline cursor-pointer font-semibold"
@@ -696,16 +828,28 @@ export default function PostsPage() {
                                             className="group py-3.5 flex items-start justify-between gap-3"
                                         >
                                             <div className="flex-1 pr-1">
-                                                <h4
-                                                    onClick={() => setReadingPost(post)}
-                                                    className="text-[13px] font-bold text-[#111111] group-hover:text-[#0073e6] transition leading-snug line-clamp-2 cursor-pointer"
-                                                >
-                                                    {post.title}
-                                                </h4>
-                                                <div className="flex items-center gap-2 mt-1.5">
+                                                <Link href={`/posts/${post.id}`}>
+                                                    <h4 className="text-[13px] font-bold text-[#111111] group-hover:text-[#0073e6] transition leading-snug line-clamp-2 cursor-pointer">
+                                                        {post.title}
+                                                    </h4>
+                                                </Link>
+                                                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                                                     <span className="text-[11px] text-[#888888]">
                                                         {formatDate(post.createdAt)}
                                                     </span>
+                                                    <Link
+                                                        href={`/posts/${post.id}#comments`}
+                                                        className="text-[11px] text-[#0073e6] hover:underline font-semibold"
+                                                        title="Xem bình luận"
+                                                    >
+                                                        💬 {post.comments?.length || 0}
+                                                    </Link>
+                                                    <Link
+                                                        href={`/posts/${post.id}`}
+                                                        className="text-[10px] text-[#0073e6] hover:underline font-medium"
+                                                    >
+                                                        chi tiết »
+                                                    </Link>
                                                     <button
                                                         onClick={(e) => handleOpenEdit(post, e)}
                                                         className="text-[10px] text-gray-400 hover:text-[#0073e6] cursor-pointer"
@@ -714,16 +858,16 @@ export default function PostsPage() {
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div
-                                                onClick={() => setReadingPost(post)}
-                                                className="w-16 h-16 flex-shrink-0 overflow-hidden bg-gray-100 cursor-pointer"
+                                            <Link
+                                                href={`/posts/${post.id}`}
+                                                className="w-16 h-16 flex-shrink-0 overflow-hidden bg-gray-100 cursor-pointer block"
                                             >
                                                 <img
                                                     src={post.image || HAGUE_PRESET_IMAGES[3].url}
                                                     alt={post.title}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                                                     onError={handleImageError} />
-                                            </div>
+                                            </Link>
                                         </article>
                                     ))}
                                 </div>
@@ -750,33 +894,46 @@ export default function PostsPage() {
                                 {businessPosts.map((post) => (
                                     <article key={post.id} className="group flex flex-col justify-between">
                                         <div>
-                                            <div
-                                                onClick={() => setReadingPost(post)}
-                                                className="relative aspect-[1.4/1] w-full overflow-hidden bg-gray-100 mb-3 cursor-pointer"
+                                            <Link
+                                                href={`/posts/${post.id}`}
+                                                className="relative aspect-[1.4/1] w-full overflow-hidden bg-gray-100 mb-3 cursor-pointer block"
                                             >
                                                 <img
                                                     src={post.image || HAGUE_PRESET_IMAGES[4].url}
                                                     alt={post.title}
                                                     className="w-full h-full object-cover group-hover:scale-103 transition duration-300"
                                                     onError={handleImageError} />
-                                            </div>
+                                            </Link>
                                             <span className="text-[11px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                                 {post.category || 'BUSINESS'}
                                             </span>
-                                            <h4
-                                                onClick={() => setReadingPost(post)}
-                                                className="text-[15px] font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-1 leading-snug line-clamp-2 cursor-pointer"
-                                            >
-                                                {post.title}
-                                            </h4>
-                                            <span className="text-[11px] text-[#888888] mt-1 block">
-                                                {formatDate(post.createdAt)}
-                                            </span>
+                                            <Link href={`/posts/${post.id}`}>
+                                                <h4 className="text-[15px] font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-1 leading-snug line-clamp-2 cursor-pointer">
+                                                    {post.title}
+                                                </h4>
+                                            </Link>
+                                            <div className="flex items-center gap-2 text-[11px] text-[#888888] mt-1 flex-wrap">
+                                                <span>{formatDate(post.createdAt)}</span>
+                                                <span>·</span>
+                                                <Link
+                                                    href={`/posts/${post.id}#comments`}
+                                                    className="inline-flex items-center gap-1 text-[#0073e6] hover:underline font-semibold"
+                                                    title="Xem bình luận"
+                                                >
+                                                    💬 {post.comments?.length || 0}
+                                                </Link>
+                                            </div>
                                             <p className="text-[12px] text-[#555555] line-clamp-3 mt-2 leading-relaxed">
                                                 {post.content}
                                             </p>
                                         </div>
                                         <div className="flex items-center justify-end gap-2 pt-3 mt-2 border-t border-gray-100">
+                                            <Link
+                                                href={`/posts/${post.id}`}
+                                                className="text-[11px] text-[#0073e6] hover:underline font-medium"
+                                            >
+                                                Chi tiết »
+                                            </Link>
                                             <button
                                                 onClick={(e) => handleOpenEdit(post, e)}
                                                 className="text-[11px] text-gray-500 hover:text-[#0073e6] px-1.5 py-0.5 rounded bg-gray-50 hover:bg-blue-50 border border-gray-200 cursor-pointer"
@@ -815,33 +972,46 @@ export default function PostsPage() {
                                 {travelPosts.map((post) => (
                                     <article key={post.id} className="group flex flex-col justify-between">
                                         <div>
-                                            <div
-                                                onClick={() => setReadingPost(post)}
-                                                className="relative aspect-[1.4/1] w-full overflow-hidden bg-gray-100 mb-3 cursor-pointer"
+                                            <Link
+                                                href={`/posts/${post.id}`}
+                                                className="relative aspect-[1.4/1] w-full overflow-hidden bg-gray-100 mb-3 cursor-pointer block"
                                             >
                                                 <img
                                                     src={post.image || HAGUE_PRESET_IMAGES[7]?.url || HAGUE_PRESET_IMAGES[4].url}
                                                     alt={post.title}
                                                     className="w-full h-full object-cover group-hover:scale-103 transition duration-300"
                                                     onError={handleImageError} />
-                                            </div>
+                                            </Link>
                                             <span className="text-[11px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                                 {post.category || 'TRAVEL'}
                                             </span>
-                                            <h4
-                                                onClick={() => setReadingPost(post)}
-                                                className="text-[15px] font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-1 leading-snug line-clamp-2 cursor-pointer"
-                                            >
-                                                {post.title}
-                                            </h4>
-                                            <span className="text-[11px] text-[#888888] mt-1 block">
-                                                {formatDate(post.createdAt)}
-                                            </span>
+                                            <Link href={`/posts/${post.id}`}>
+                                                <h4 className="text-[15px] font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-1 leading-snug line-clamp-2 cursor-pointer">
+                                                    {post.title}
+                                                </h4>
+                                            </Link>
+                                            <div className="flex items-center gap-2 text-[11px] text-[#888888] mt-1 flex-wrap">
+                                                <span>{formatDate(post.createdAt)}</span>
+                                                <span>·</span>
+                                                <Link
+                                                    href={`/posts/${post.id}#comments`}
+                                                    className="inline-flex items-center gap-1 text-[#0073e6] hover:underline font-semibold"
+                                                    title="Xem bình luận"
+                                                >
+                                                    💬 {post.comments?.length || 0}
+                                                </Link>
+                                            </div>
                                             <p className="text-[12px] text-[#555555] line-clamp-3 mt-2 leading-relaxed">
                                                 {post.content}
                                             </p>
                                         </div>
                                         <div className="flex items-center justify-end gap-2 pt-3 mt-2 border-t border-gray-100">
+                                            <Link
+                                                href={`/posts/${post.id}`}
+                                                className="text-[11px] text-[#0073e6] hover:underline font-medium"
+                                            >
+                                                Chi tiết »
+                                            </Link>
                                             <button
                                                 onClick={(e) => handleOpenEdit(post, e)}
                                                 className="text-[11px] text-gray-500 hover:text-[#0073e6] px-1.5 py-0.5 rounded bg-gray-50 hover:bg-blue-50 border border-gray-200 cursor-pointer"
@@ -880,35 +1050,48 @@ export default function PostsPage() {
                                 {/* Bài lớn bên trái (7 cols) */}
                                 {politicsMain && (
                                     <article className="lg:col-span-7 group">
-                                        <div
-                                            onClick={() => setReadingPost(politicsMain)}
-                                            className="relative aspect-[1.6/1] w-full overflow-hidden bg-gray-100 mb-4 cursor-pointer"
+                                        <Link
+                                            href={`/posts/${politicsMain.id}`}
+                                            className="relative aspect-[1.6/1] w-full overflow-hidden bg-gray-100 mb-4 cursor-pointer block"
                                         >
                                             <img
                                                 src={politicsMain.image || HAGUE_PRESET_IMAGES[2].url}
                                                 alt={politicsMain.title}
                                                 className="w-full h-full object-cover group-hover:scale-102 transition duration-500"
                                                 onError={handleImageError} />
-                                        </div>
+                                        </Link>
                                         <span className="text-[11px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                             {politicsMain.category || 'POLITICS'}
                                         </span>
-                                        <h3
-                                            onClick={() => setReadingPost(politicsMain)}
-                                            className="text-xl sm:text-2xl font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-1 mb-2 leading-snug cursor-pointer"
-                                        >
-                                            {politicsMain.title}
-                                        </h3>
+                                        <Link href={`/posts/${politicsMain.id}`}>
+                                            <h3 className="text-xl sm:text-2xl font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-1 mb-2 leading-snug cursor-pointer">
+                                                {politicsMain.title}
+                                            </h3>
+                                        </Link>
                                         <p className="text-[13px] text-[#555555] line-clamp-3 leading-relaxed mb-3">
                                             {politicsMain.content}
                                         </p>
-                                        <div className="flex items-center justify-between text-[12px] text-[#888888]">
+                                        <div className="flex items-center justify-between text-[12px] text-[#888888] flex-wrap gap-2">
                                             <div className="flex items-center gap-2">
                                                 <span>{formatDate(politicsMain.createdAt)}</span>
                                                 <span>·</span>
                                                 <span className="text-[#111111] font-semibold">{politicsMain.author}</span>
+                                                <span>·</span>
+                                                <Link
+                                                    href={`/posts/${politicsMain.id}#comments`}
+                                                    className="inline-flex items-center gap-1 text-[#0073e6] hover:text-white hover:bg-[#0073e6] bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-bold transition cursor-pointer"
+                                                    title="Bấm để xem chi tiết bài viết và danh sách bình luận"
+                                                >
+                                                    💬 {politicsMain.comments?.length || 0}
+                                                </Link>
                                             </div>
                                             <div className="flex items-center gap-2">
+                                                <Link
+                                                    href={`/posts/${politicsMain.id}`}
+                                                    className="text-[11px] text-[#0073e6] hover:text-white hover:bg-[#0073e6] px-2 py-0.5 rounded bg-blue-50 border border-blue-200 font-medium transition cursor-pointer"
+                                                >
+                                                    Chi tiết »
+                                                </Link>
                                                 <button
                                                     onClick={(e) => handleOpenEdit(politicsMain, e)}
                                                     className="text-[11px] text-gray-500 hover:text-[#0073e6] px-1.5 py-0.5 rounded bg-gray-50 hover:bg-blue-50 border border-gray-200 cursor-pointer"
@@ -931,30 +1114,43 @@ export default function PostsPage() {
                                     {politicsGrid.map((post) => (
                                         <article key={post.id} className="group flex flex-col justify-between">
                                             <div>
-                                                <div
-                                                    onClick={() => setReadingPost(post)}
-                                                    className="relative aspect-[1.4/1] w-full overflow-hidden bg-gray-100 mb-2 cursor-pointer"
+                                                <Link
+                                                    href={`/posts/${post.id}`}
+                                                    className="relative aspect-[1.4/1] w-full overflow-hidden bg-gray-100 mb-2 cursor-pointer block"
                                                 >
                                                     <img
                                                         src={post.image || HAGUE_PRESET_IMAGES[2].url}
                                                         alt={post.title}
                                                         className="w-full h-full object-cover group-hover:scale-103 transition duration-300"
                                                         onError={handleImageError} />
-                                                </div>
+                                                </Link>
                                                 <span className="text-[10px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                                     {post.category || 'POLITICS'}
                                                 </span>
-                                                <h4
-                                                    onClick={() => setReadingPost(post)}
-                                                    className="text-[13px] font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-0.5 line-clamp-2 leading-snug cursor-pointer"
-                                                >
-                                                    {post.title}
-                                                </h4>
-                                                <span className="text-[11px] text-[#888888] mt-1 block">
-                                                    {formatDate(post.createdAt)}
-                                                </span>
+                                                <Link href={`/posts/${post.id}`}>
+                                                    <h4 className="text-[13px] font-bold text-[#111111] group-hover:text-[#0073e6] transition mt-0.5 line-clamp-2 leading-snug cursor-pointer">
+                                                        {post.title}
+                                                    </h4>
+                                                </Link>
+                                                <div className="flex items-center gap-1.5 text-[11px] text-[#888888] mt-1 flex-wrap">
+                                                    <span>{formatDate(post.createdAt)}</span>
+                                                    <span>·</span>
+                                                    <Link
+                                                        href={`/posts/${post.id}#comments`}
+                                                        className="inline-flex items-center gap-1 text-[#0073e6] hover:underline font-semibold"
+                                                        title="Xem bình luận"
+                                                    >
+                                                        💬 {post.comments?.length || 0}
+                                                    </Link>
+                                                </div>
                                             </div>
                                             <div className="flex items-center justify-end gap-1.5 pt-2">
+                                                <Link
+                                                    href={`/posts/${post.id}`}
+                                                    className="text-[10px] text-[#0073e6] hover:underline cursor-pointer font-medium"
+                                                >
+                                                    chi tiết »
+                                                </Link>
                                                 <button
                                                     onClick={(e) => handleOpenEdit(post, e)}
                                                     className="text-[10px] text-gray-400 hover:text-[#0073e6] cursor-pointer"
@@ -1152,10 +1348,10 @@ export default function PostsPage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={isUpdating}
+                                    disabled={updatePostMutation.isPending}
                                     className="px-6 py-2.5 rounded-md bg-[#0073e6] hover:bg-[#0060c0] active:scale-95 text-white text-xs font-bold tracking-wider uppercase transition disabled:opacity-50 cursor-pointer shadow-sm"
                                 >
-                                    {isUpdating ? 'Đang lưu...' : 'LƯU THAY ĐỔI'}
+                                    {updatePostMutation.isPending ? 'Đang lưu...' : 'LƯU THAY ĐỔI'}
                                 </button>
                             </div>
                         </form>
@@ -1326,10 +1522,10 @@ export default function PostsPage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={submitting}
+                                    disabled={createPostMutation.isPending}
                                     className="px-6 py-2.5 rounded-md bg-[#0073e6] hover:bg-[#0060c0] active:scale-95 text-white text-xs font-bold tracking-wider uppercase transition disabled:opacity-50 cursor-pointer shadow-sm"
                                 >
-                                    {submitting ? 'Đang xuất bản...' : 'XUẤT BẢN BÀI VIẾT'}
+                                    {createPostMutation.isPending ? 'Đang xuất bản...' : 'XUẤT BẢN BÀI VIẾT'}
                                 </button>
                             </div>
                         </form>
@@ -1348,6 +1544,13 @@ export default function PostsPage() {
                                 {readingPost.category || 'ARTICLE'}
                             </span>
                             <div className="flex items-center gap-2">
+                                <Link
+                                    href={`/posts/${readingPost.id}`}
+                                    className="px-3 py-1 text-xs font-semibold text-blue-700 hover:text-blue-900 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 transition cursor-pointer flex items-center gap-1"
+                                    title="Xem chi tiết tại trang riêng /posts/:id"
+                                >
+                                    ↗️ Trang riêng
+                                </Link>
                                 <button
                                     onClick={(e) => handleOpenEdit(readingPost, e)}
                                     className="px-3 py-1 text-xs font-medium text-gray-700 hover:text-[#0073e6] bg-white border border-gray-300 rounded hover:bg-gray-50 transition cursor-pointer"
@@ -1393,6 +1596,85 @@ export default function PostsPage() {
 
                             <div className="text-[15px] text-[#333333] leading-relaxed whitespace-pre-line space-y-4">
                                 {readingPost.content}
+                            </div>
+
+                            {/* ============================================================== */}
+                            {/* NÂNG CAO 4: BÌNH LUẬN ĐỘC GIẢ (COMMENTS)                       */}
+                            {/* ============================================================== */}
+                            <div className="mt-10 pt-6 border-t border-[#e5e5e5]">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-sm sm:text-base font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                                        <span>💬</span> Ý KIẾN BẠN ĐỌC ({currentReadingPost?.comments?.length || 0})
+                                    </h3>
+                                </div>
+
+                                {/* Form gửi bình luận mới */}
+                                <form onSubmit={handleSendComment} className="p-4 bg-gray-50 rounded-xl border border-gray-200 mb-6 space-y-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <input
+                                            type="text"
+                                            value={commentAuthor}
+                                            onChange={(e) => setCommentAuthor(e.target.value)}
+                                            placeholder="Họ và tên của bạn..."
+                                            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-xs focus:outline-none focus:border-[#0073e6] bg-white"
+                                            required
+                                        />
+                                    </div>
+                                    <textarea
+                                        rows={2}
+                                        value={commentContent}
+                                        onChange={(e) => setCommentContent(e.target.value)}
+                                        placeholder="Chia sẻ quan điểm hoặc đóng góp ý kiến về bài báo này..."
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 text-xs focus:outline-none focus:border-[#0073e6] bg-white resize-none"
+                                        required
+                                    />
+                                    <div className="flex justify-end">
+                                        <button
+                                            type="submit"
+                                            disabled={addCommentMutation.isPending}
+                                            className="px-4 py-2 rounded-md bg-[#0073e6] hover:bg-[#0060c0] active:scale-95 text-white text-xs font-bold tracking-wider uppercase transition disabled:opacity-50 cursor-pointer shadow-sm"
+                                        >
+                                            {addCommentMutation.isPending ? 'Đang gửi...' : 'GỬI BÌNH LUẬN'}
+                                        </button>
+                                    </div>
+                                </form>
+
+                                {/* Danh sách bình luận */}
+                                <div className="space-y-3">
+                                    {currentReadingPost?.comments && currentReadingPost.comments.length > 0 ? (
+                                        currentReadingPost.comments.map((comment) => (
+                                            <div key={comment.id} className="p-3.5 bg-white border border-gray-200 rounded-lg flex items-start justify-between gap-3 shadow-xs">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0073e6] font-bold text-xs flex items-center justify-center flex-shrink-0 uppercase">
+                                                        {comment.author.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs font-bold text-gray-900">{comment.author}</span>
+                                                            <span className="text-[10px] text-gray-400">·</span>
+                                                            <span className="text-[11px] text-gray-400">{formatDate(comment.createdAt)}</span>
+                                                        </div>
+                                                        <p className="text-xs text-gray-700 mt-1 leading-relaxed whitespace-pre-line">
+                                                            {comment.content}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleDeleteComment(comment.id)}
+                                                    disabled={deleteCommentMutation.isPending}
+                                                    className="text-xs text-gray-400 hover:text-red-600 p-1 transition cursor-pointer"
+                                                    title="Xoá bình luận này"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-xs text-gray-400 text-center py-4 italic">
+                                            Chưa có bình luận nào. Hãy là người đầu tiên đóng góp ý kiến!
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -202,7 +202,11 @@ cd N23DCPT054_NguyenThaiTuan_Web_Prac3a
 
 | Phương thức | Đường dẫn Endpoint | Chức năng | Tham số / Dữ liệu yêu cầu | Trạng thái phản hồi |
 | :--- | :--- | :--- | :--- | :--- |
-| **GET** | `/api/posts` | Lấy danh sách toàn bộ bài viết toà soạn | Không | `200 OK` |
+| **GET** | `/` | Root Health Check máy chủ | Không | `200 OK` |
+| **GET** | `/api/posts` | Lấy danh sách toàn bộ bài viết toà soạn (kèm bình luận) | Không | `200 OK` |
 | **POST** | `/api/posts` | Thêm bài viết mới (kèm ảnh và chuyên mục) | Body: `{ title, content, author, category, image }` | `201 Created` / `400 Bad Request` |
-| **PUT** | `/api/posts/:id` | Cập nhật thông tin bài viết | Params: `id`, Body: `{ title, content, author, category, image }` | `200 OK` / `404 Not Found` |
-| **DELETE** | `/api/posts/:id` | Xóa bài viết theo ID | Params: `id` | `200 OK` / `404 Not Found` |
+| **PUT** | `/api/posts/:id` | Cập nhật thông tin bài viết (Nâng cao 1) | Params: `id`, Body: `{ title, content, author, category, image }` | `200 OK` / `404 Not Found` |
+| **DELETE** | `/api/posts/:id` | Xóa bài viết theo ID (Tiết 4-5) | Params: `id` | `200 OK` / `404 Not Found` |
+| **GET** | `/api/posts/:id/comments` | Lấy danh sách bình luận của bài viết (Nâng cao 4) | Params: `id` | `200 OK` / `404 Not Found` |
+| **POST** | `/api/posts/:id/comments` | Gửi bình luận mới vào bài viết (Nâng cao 4) | Params: `id`, Body: `{ author, content }` | `201 Created` / `400 Bad Request` |
+| **DELETE** | `/api/comments/:commentId` | Xóa bình luận độc giả theo ID (Nâng cao 4) | Params: `commentId` | `200 OK` / `404 Not Found` |

@@ -19,6 +19,8 @@ export const metadata = {
   description: 'Báo điện tử toà soạn HAGUE - Lab 3 Fullstack Integration: NextJS + Express',
 };
 
+import Providers from './providers';
+
 export default function RootLayout({
   children,
 }: {
@@ -27,7 +29,9 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${inter.variable} ${playfair.variable}`}>
       <body className="min-h-screen bg-white text-[#111111] antialiased selection:bg-[#0073e6] selection:text-white">
-        {children}
+        <Providers>
+          {children}
+        </Providers>
         <Toaster
           position="top-right"
           toastOptions={{
