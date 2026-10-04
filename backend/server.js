@@ -20,6 +20,26 @@ app.get('/api/posts', (req, res) => {
   res.json(posts);
 });
 
+app.post('/api/posts', (req, res) => {
+  const { title, content, author } = req.body;
+
+  // Validation đơn giản
+  if (!title || !content || !author) {
+    return res.status(400).json({ error: 'Thiếu dữ liệu' });
+  }
+
+  const newPost = {
+    id: Date.now(),
+    title,
+    content,
+    author,
+    createdAt: new Date().toISOString()
+  };
+
+  posts.push(newPost);
+  res.status(201).json(newPost);
+});
+
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Backend chạy tại port :${PORT}`);
