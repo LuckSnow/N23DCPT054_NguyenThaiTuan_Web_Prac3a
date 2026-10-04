@@ -1,6 +1,6 @@
 # BÀI THỰC HÀNH LAB 3: FULLSTACK INTEGRATION (NEXTJS + EXPRESS)
 
-Dự án thực hành kết nối Frontend Next.js với Backend Express nhằm xây dựng hệ thống quản lý bài viết hoàn chỉnh với cơ chế xử lý CORS, giao tiếp RESTful API, quản lý trạng thái giao diện với Optimistic Update và giao diện hiện đại.
+Dự án thực hành kết nối Frontend Next.js với Backend Express nhằm xây dựng hệ sinh thái quản lý bài viết hoàn chỉnh với cơ chế xử lý CORS, giao tiếp RESTful API, quản lý trạng thái giao diện với Optimistic Update và giao diện toà soạn tin tức hiện đại lấy cảm hứng từ phong cách tạp chí **Hague (Clean News Website Inspiration)**.
 
 ---
 
@@ -8,25 +8,23 @@ Dự án thực hành kết nối Frontend Next.js với Backend Express nhằm 
 
 - **Họ và tên:** Nguyễn Thái Tuấn
 - **Mã số sinh viên (MSSV):** N23DCPT054
-- **Email:** [n23dcpt054@student.ptithcm.edu.vn](mailto:n23dcpt054@student.ptithcm.edu.vn) | [lucksnow1108@gmail.com](mailto:lucksnow1108@gmail.com)
-- **Lớp / Đơn vị:** Học viện Công nghệ Bưu chính Viễn thông - Cơ sở TP. Hồ Chí Minh (PTIT HCM)
+- **Lớp:** D23CQPTUD01-N
 - **Bài thực hành:** Lab 3 - Nhóm 2: *Kết nối Frontend NextJS với Backend Express để quản lý bài viết / bình luận*
-- **Repository:** [https://github.com/LuckSnow/N23DCPT054_NguyenThaiTuan_Web_Prac3a.git](https://github.com/LuckSnow/N23DCPT054_NguyenThaiTuan_Web_Prac3a.git)
 
 ---
 
 ## 2. Mô Tả Tổng Quan Dự Án
 
-Dự án mô phỏng ứng dụng Fullstack Blog hiện đại, triển khai đầy đủ các yêu cầu theo tài liệu hướng dẫn Lab 3:
+Dự án triển khai đầy đủ các yêu cầu kỹ thuật theo tài liệu hướng dẫn Lab 3 kết hợp tái thiết kế toàn bộ giao diện theo chuẩn toà soạn báo chí hiện đại **Hague**:
 
 1. **Thiết lập môi trường & Xử lý CORS:**
    - Xây dựng Backend Express chạy tại cổng `5000`, cấu hình middleware `cors` chỉ định rõ origin cho phép từ Next.js (`http://localhost:3000`).
    - Cấu hình giải pháp thay thế Proxy rewrites trong `next.config.ts` để định tuyến các request `/api/:path*` từ Frontend sang Backend mà không gặp lỗi trình duyệt chặn cùng nguồn (Same-Origin Policy).
 
-2. **Giao tiếp Dữ liệu & Quản lý API:**
+2. **Giao tiếp Dữ liệu & Quản lý API RESTful:**
    - Xây dựng các Endpoint chuẩn RESTful: `GET`, `POST`, `PUT`, `DELETE` cho tài nguyên bài viết (`/api/posts`).
-   - Triển khai gọi dữ liệu bằng cả Native Fetch API và nâng cấp sang thư viện **Axios** với instance cấu hình tập trung (`frontend/lib/api.ts`).
-   - Kiểm tra dữ liệu đầu vào (Validation) ở phía server (tiêu đề, nội dung, tác giả).
+   - Triển khai gọi dữ liệu bằng thư viện **Axios** với instance cấu hình tập trung (`frontend/lib/api.ts`).
+   - Kiểm tra dữ liệu đầu vào (Validation) ở phía server (tiêu đề, nội dung, tác giả, chuyên mục, ảnh minh hoạ).
 
 3. **Trải nghiệm Người dùng (UX) & Thông báo phản hồi:**
    - Tích hợp thư viện `react-hot-toast` với component `<Toaster position="top-right" />` trong Root Layout.
@@ -36,13 +34,17 @@ Dự án mô phỏng ứng dụng Fullstack Blog hiện đại, triển khai đ�
    - Khi xóa bài viết: người dùng bấm xác nhận qua hộp thoại confirm, giao diện lập tức lọc bỏ bài viết khỏi state ngay lập tức giúp thao tác mượt mà không cần F5 tải lại trang.
    - Tự động Rollback: nếu server trả về mã lỗi hoặc gặp sự cố mạng, ứng dụng tự động gọi lại API để đồng bộ trạng thái chính xác.
 
-5. **Phần Nâng Cao (Bonus):**
-   - Bổ sung chức năng chỉnh sửa bài viết với API `PUT /api/posts/:id` ở Backend.
-   - Cung cấp Modal cập nhật hiện đại ở Frontend với dữ liệu được điền sẵn, cho phép người dùng thay đổi tiêu đề, tác giả và nội dung nhanh chóng.
+5. **Thiết kế Giao diện Toà Soạn Báo Hague (Editorial Inspiration):**
+   - **Masthead & Top Bar:** Logo toà soạn **HAGUE** trang nhã ở vị trí trung tâm, thanh điều hướng chuyên mục đa tầng (`OPINION`, `BUSINESS`, `POLITICS`, `TRAVEL`, `BOOKS`, `LIFESTYLE`), nút bấm nổi bật `+ Viết bài mới`.
+   - **Hero Featured Section (3 cột đặc trưng):** Cột trái gồm 2 bài viết xếp tầng (Stacked cards), Cột giữa là bài viết tiêu điểm lớn nhất (Large Centerpiece), Cột phải là thanh tin mới nhất (LATEST Sidebar với ảnh thumbnail).
+   - **Lưới chuyên mục 4 cột (4-Column Grid):** Phân chia rõ rệt các chuyên mục `BUSINESS` và `TRAVEL` với thẻ bài viết tỉ lệ ảnh vàng, tag thể loại màu xanh dương nổi bật và trích dẫn ngắn.
+   - **Spotlight 2 phân vùng (POLITICS Section):** Bố cục bài tiêu điểm góc nhìn lớn bên trái kết hợp lưới 2x2 các bài báo ngắn bên phải.
 
-6. **Thiết kế Giao diện Hiện Đại (Modern UI):**
-   - Ứng dụng Tailwind CSS với phong cách thiết kế giao diện phẳng kết hợp hiệu ứng đổ bóng mờ (soft shadows), bo tròn góc hiện đại (`rounded-2xl`).
-   - Thẻ hiển thị bài viết trực quan kèm ảnh đại diện chữ cái (Avatar initials), thời gian đăng bài được format rõ ràng, huy hiệu trạng thái kết nối máy chủ `:5000`.
+6. **Các tính năng sáng tạo mở rộng:**
+   - **Modal Soạn thảo bài viết mới:** Cung cấp bộ chọn ảnh toà soạn Hague nhanh chóng (Preset Image Gallery), nhập chuyên mục, tác giả và nội dung.
+   - **Modal Chỉnh sửa bài viết (PUT - Nâng cao 1):** Cho phép sửa nhanh tiêu đề, tác giả, chuyên mục và nội dung bài viết.
+   - **Modal Đọc bài viết (Reader Mode):** Trải nghiệm đọc báo không xao nhãng với kiểu chữ bài báo trang nhã, ảnh toàn cảnh và các nút thao tác nhanh.
+   - **Thanh tìm kiếm tức thì (Live Search):** Lọc bài viết nhanh theo từ khoá tiêu đề, tác giả và nội dung.
 
 ---
 
@@ -52,65 +54,82 @@ Dự án mô phỏng ứng dụng Fullstack Blog hiện đại, triển khai đ�
 
 ```text
 fullstack-blog/
-├── .gitignore               # Tệp cấu hình bỏ qua thư mục/tệp nhạy cảm khi đẩy lên Git
-├── README.md                # Tài liệu hướng dẫn và thông tin đồ án
-├── Lab3_nhom2.pdf           # Tài liệu hướng dẫn thực hành Lab 3
+├── .gitignore                                     # Tệp cấu hình bỏ qua thư mục/tệp nhạy cảm khi đẩy lên Git
+├── README.md                                      # Tài liệu hướng dẫn và thông tin đồ án
+├── Lab3_nhom2.pdf                                 # Tài liệu hướng dẫn thực hành Lab 3
+├── Hague _ Clean News Website Inspiration.jpg    # Ảnh mẫu thiết kế giao diện toà soạn Hague
 │
-├── backend/                 # Máy chủ RESTful API (Node.js & Express)
-│   ├── server.js            # Khởi tạo server, cấu hình CORS, Router (GET, POST, PUT, DELETE)
-│   ├── package.json         # Danh sách thư viện backend (express, cors, dotenv, nodemon)
+├── backend/                                       # Máy chủ RESTful API (Node.js & Express)
+│   ├── server.js                                  # Khởi tạo Express, cấu hình CORS, CRUD bài viết (/api/posts)
+│   ├── package.json                               # Danh sách thư viện backend (express, cors, dotenv, nodemon)
 │   └── package-lock.json
 │
-└── frontend/                # Ứng dụng giao diện người dùng (Next.js 16 App Router & Tailwind CSS)
+└── frontend/                                      # Ứng dụng giao diện người dùng (Next.js 16 & Tailwind CSS)
     ├── app/
-    │   ├── globals.css      # Cấu hình styles toàn cục và Tailwind v4
-    │   ├── layout.tsx       # Root Layout tích hợp Toaster từ react-hot-toast
-    │   ├── page.tsx         # Trang chủ tự động chuyển hướng sang /posts
+    │   ├── globals.css                            # Cấu hình styles toàn cục, Tailwind v4 và Google Fonts toà soạn
+    │   ├── layout.tsx                             # Root Layout tích hợp Toaster từ react-hot-toast
+    │   ├── page.tsx                               # Trang chủ tự động chuyển hướng sang /posts
     │   └── posts/
-    │       └── page.tsx     # Trang giao diện chính: form tạo bài, danh sách, sửa (modal), xóa
+    │       └── page.tsx                           # Giao diện chính toà soạn HAGUE (Hero 3 cột, Grid, Modals CRUD)
     ├── lib/
-    │   └── api.ts           # Cấu hình Axios instance tập trung kết nối Backend port 5000
-    ├── next.config.ts       # Cấu hình Next.js (chứa rewrites proxy chuyển tiếp /api/*)
-    ├── tsconfig.json        # Cấu hình TypeScript
-    ├── package.json         # Danh sách thư viện frontend (next, react, axios, react-hot-toast...)
+    │   └── api.ts                                 # Cấu hình Axios instance tập trung kết nối Backend port 5000
+    ├── public/                                    # Tài nguyên tĩnh và SVG icons
+    ├── next.config.ts                             # Cấu hình Next.js (chứa rewrites proxy chuyển tiếp /api/*)
+    ├── tsconfig.json                              # Cấu hình TypeScript
+    ├── package.json                               # Danh sách thư viện frontend (next, react, axios, react-hot-toast)
     └── package-lock.json
 ```
 
-### 3.2. Sơ Đồ Luồng Hoạt Động (Architecture Flow)
+### 3.2. Sơ Đồ Luồng Hoạt Động & Tương Tác Dữ Liệu (Architecture Sequence)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Người dùng
-    participant Frontend as Next.js Frontend (:3000)
+    actor User as Độc giả / Biên tập viên
+    participant UI as Giao diện HAGUE (:3000)
+    participant Axios as Axios Client (lib/api.ts)
     participant Proxy as Next.js Proxy Rewrites
-    participant Backend as Express Backend (:5000)
-    participant Memory as Mảng dữ liệu Posts (RAM)
+    participant API as Express Server (:5000)
+    participant RAM as Bộ nhớ Dữ liệu Posts
 
     %% Tải dữ liệu ban đầu
-    User->>Frontend: Truy cập /posts
-    Frontend->>Backend: GET /api/posts (Axios baseURL: 5000)
-    Backend->>Memory: Lấy danh sách posts
-    Memory-->>Backend: Danh sách bài viết
-    Backend-->>Frontend: Trả về JSON [ { id, title, author, content } ]
-    Frontend-->>User: Hiển thị danh sách thẻ bài viết
+    User->>UI: Truy cập toà soạn /posts
+    UI->>Axios: Gọi api.get('/api/posts')
+    Axios->>API: HTTP GET /api/posts
+    API->>RAM: Đọc mảng bài viết toà soạn
+    RAM-->>API: Danh sách bài viết
+    API-->>Axios: HTTP 200 OK (JSON Posts)
+    Axios-->>UI: Cập nhật State & Phân bổ Layout (Hero 3 cột, Business, Travel, Politics)
+    UI-->>User: Hiển thị giao diện tạp chí Hague trực quan
 
     %% Tạo bài viết mới
-    User->>Frontend: Nhập form & bấm "Đăng bài viết"
-    Frontend->>Backend: POST /api/posts { title, content, author }
-    Backend->>Backend: Kiểm tra dữ liệu (Validation)
-    Backend->>Memory: posts.push(newPost)
-    Backend-->>Frontend: HTTP 201 Created (newPost)
-    Frontend->>Frontend: toast.success("Đăng bài thành công!")
-    Frontend->>Frontend: Tự động tải lại danh sách bài mới
+    User->>UI: Bấm "+ Viết bài mới", nhập thông tin & xuất bản
+    UI->>Axios: Gọi api.post('/api/posts', newPostData)
+    Axios->>API: HTTP POST /api/posts
+    API->>API: Kiểm tra dữ liệu (Validation)
+    API->>RAM: posts.unshift(newPost)
+    API-->>Axios: HTTP 201 Created (newPost)
+    Axios-->>UI: Prepend bài viết lên đầu state
+    UI->>UI: toast.success("Đăng bài thành công!")
+    UI-->>User: Bài viết mới lập tức xuất hiện tại vị trí tiêu điểm
+
+    %% Chỉnh sửa bài viết (PUT)
+    User->>UI: Bấm "✏️ Sửa", cập nhật nội dung & lưu
+    UI->>Axios: Gọi api.put('/api/posts/:id', editData)
+    Axios->>API: HTTP PUT /api/posts/:id
+    API->>RAM: Cập nhật phần tử trong mảng posts
+    API-->>Axios: HTTP 200 OK (updatedPost)
+    Axios-->>UI: Cập nhật bài viết trong state
+    UI->>UI: toast.success("Cập nhật bài viết thành công!")
 
     %% Xóa bài viết (Optimistic Update)
-    User->>Frontend: Bấm "Xóa" & xác nhận qua confirm()
-    Frontend->>Frontend: Optimistic Update: Xóa ngay bài viết khỏi State UI
-    Frontend->>Frontend: toast.success("Đã xoá bài viết")
-    Frontend->>Backend: DELETE /api/posts/:id
-    Backend->>Memory: posts.splice(index, 1)
-    Backend-->>Frontend: HTTP 200 { message: "Đã xoá thành công" }
+    User->>UI: Bấm "🗑️ Xóa" & xác nhận qua confirm()
+    UI->>UI: Optimistic Update: Xóa ngay bài viết khỏi State UI
+    UI->>UI: toast.success("Đã xoá bài viết")
+    UI->>Axios: Gọi api.delete('/api/posts/:id')
+    Axios->>API: HTTP DELETE /api/posts/:id
+    API->>RAM: posts.splice(index, 1)
+    API-->>Axios: HTTP 200 OK { message: "Đã xoá thành công" }
 ```
 
 ---
@@ -120,7 +139,7 @@ sequenceDiagram
 ### 4.1. Yêu Cầu Môi Trường
 - **Node.js**: Phiên bản 18.x trở lên.
 - **npm**: Trình quản lý gói đi kèm Node.js.
-- **Git**: Đã cài đặt trên máy.
+- **Git**: Đã cài đặt trên máy tính.
 
 ---
 
@@ -148,7 +167,7 @@ cd N23DCPT054_NguyenThaiTuan_Web_Prac3a
 3. Khởi chạy máy chủ Backend:
    ```bash
    node server.js
-   # Hoặc chạy ở chế độ dev nếu có nodemon:
+   # Hoặc chạy chế độ nodemon nếu có:
    # npm run dev
    ```
 
@@ -176,7 +195,7 @@ cd N23DCPT054_NguyenThaiTuan_Web_Prac3a
    ```
 
 4. **Kiểm tra hoạt động:**
-   - Mở trình duyệt web và truy cập địa chỉ: [http://localhost:3000](http://localhost:3000) (hệ thống sẽ tự động điều hướng vào trang quản lý bài viết [http://localhost:3000/posts](http://localhost:3000/posts)).
+   - Mở trình duyệt web và truy cập địa chỉ: [http://localhost:3000](http://localhost:3000) (hệ thống sẽ tự động điều hướng vào giao diện toà soạn [http://localhost:3000/posts](http://localhost:3000/posts)).
 
 ---
 
@@ -184,19 +203,7 @@ cd N23DCPT054_NguyenThaiTuan_Web_Prac3a
 
 | Phương thức | Đường dẫn Endpoint | Chức năng | Tham số / Dữ liệu yêu cầu | Trạng thái phản hồi |
 | :--- | :--- | :--- | :--- | :--- |
-| **GET** | `/api/posts` | Lấy danh sách toàn bộ bài viết | Không | `200 OK` |
-| **POST** | `/api/posts` | Thêm bài viết mới | Body: `{ title, content, author }` | `201 Created` / `400 Bad Request` |
-| **PUT** | `/api/posts/:id` | Cập nhật thông tin bài viết | Params: `id`, Body: `{ title, content, author }` | `200 OK` / `404 Not Found` |
+| **GET** | `/api/posts` | Lấy danh sách toàn bộ bài viết toà soạn | Không | `200 OK` |
+| **POST** | `/api/posts` | Thêm bài viết mới (kèm ảnh và chuyên mục) | Body: `{ title, content, author, category, image }` | `201 Created` / `400 Bad Request` |
+| **PUT** | `/api/posts/:id` | Cập nhật thông tin bài viết | Params: `id`, Body: `{ title, content, author, category, image }` | `200 OK` / `404 Not Found` |
 | **DELETE** | `/api/posts/:id` | Xóa bài viết theo ID | Params: `id` | `200 OK` / `404 Not Found` |
-
----
-
-## 6. Checklist Tự Kiểm Tra Trước Khi Hoàn Thành
-
-- [x] Backend chạy ổn định tại port `5000`, cung cấp đầy đủ các route: `GET / POST / PUT / DELETE /api/posts`.
-- [x] Frontend kết nối API thành công, cấu hình CORS hợp lệ, không phát sinh lỗi CORS trong Browser Console.
-- [x] Form đăng bài hoạt động mượt mà, bài viết mới xuất hiện ngay lập tức trong danh sách.
-- [x] Chức năng Xóa bài viết với cơ chế **Optimistic Update** hoạt động chuẩn xác (danh sách tự cập nhật ngay không cần F5).
-- [x] Thông báo Toast trực quan hiển thị đầy đủ khi thêm bài, sửa bài, xóa bài và xử lý khi gặp lỗi.
-- [x] Hoàn thiện phần nâng cao (Bonus): Chỉnh sửa bài viết với API `PUT` và giao diện Modal trực quan.
-- [x] Toàn bộ mã nguồn sạch đẹp, không phát sinh lỗi đỏ trong Browser Console và Backend Terminal.
