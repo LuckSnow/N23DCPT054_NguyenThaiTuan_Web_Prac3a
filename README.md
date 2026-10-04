@@ -41,8 +41,9 @@ Dự án triển khai đầy đủ các yêu cầu kỹ thuật theo tài liệu
    - **Spotlight 2 phân vùng (POLITICS Section):** Bố cục bài tiêu điểm góc nhìn lớn bên trái kết hợp lưới 2x2 các bài báo ngắn bên phải.
 
 6. **Các tính năng sáng tạo mở rộng:**
+   - **Tải ảnh từ máy tính & Quản lý hình ảnh:** Cho phép tải ảnh trực tiếp từ thiết bị cá nhân (Local Device Upload) khi tạo bài viết hoặc chỉnh sửa bài viết với tính năng xem trước trực tiếp (Live Preview) và tuỳ chọn thay ảnh linh hoạt.
    - **Modal Soạn thảo bài viết mới:** Cung cấp bộ chọn ảnh toà soạn Hague nhanh chóng (Preset Image Gallery), nhập chuyên mục, tác giả và nội dung.
-   - **Modal Chỉnh sửa bài viết (PUT - Nâng cao 1):** Cho phép sửa nhanh tiêu đề, tác giả, chuyên mục và nội dung bài viết.
+   - **Modal Chỉnh sửa bài viết (PUT - Nâng cao 1):** Cho phép sửa nhanh tiêu đề, tác giả, chuyên mục, đổi ảnh mới và cập nhật nội dung bài viết.
    - **Modal Đọc bài viết (Reader Mode):** Trải nghiệm đọc báo không xao nhãng với kiểu chữ bài báo trang nhã, ảnh toàn cảnh và các nút thao tác nhanh.
    - **Thanh tìm kiếm tức thì (Live Search):** Lọc bài viết nhanh theo từ khoá tiêu đề, tác giả và nội dung.
 
