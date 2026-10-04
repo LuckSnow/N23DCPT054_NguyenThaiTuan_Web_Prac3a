@@ -323,13 +323,6 @@ export default function PostsPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </button>
-                            <button
-                                onClick={fetchPosts}
-                                className="p-1 hover:text-black transition text-xs font-semibold text-gray-400 hover:text-gray-700 cursor-pointer"
-                                title="Đồng bộ dữ liệu Backend :5000"
-                            >
-                                🔄
-                            </button>
                         </div>
 
                         {/* Center Logo - HAGUE */}
@@ -491,7 +484,7 @@ export default function PostsPage() {
                                                     src={post.image || HAGUE_PRESET_IMAGES[0].url}
                                                     alt={post.title}
                                                     className="w-full h-full object-cover group-hover:scale-103 transition duration-300"
-                                                 onError={handleImageError}/>
+                                                    onError={handleImageError} />
                                             </div>
                                             <span className="text-[11px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                                 {post.category || 'TIN TỨC'}
@@ -555,7 +548,7 @@ export default function PostsPage() {
                                                     src={heroLeft1.image || HAGUE_PRESET_IMAGES[1].url}
                                                     alt={heroLeft1.title}
                                                     className="w-full h-full object-cover group-hover:scale-103 transition duration-300"
-                                                 onError={handleImageError}/>
+                                                    onError={handleImageError} />
                                             </div>
                                             <span className="text-[11px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                                 {heroLeft1.category || 'BOOKS'}
@@ -600,7 +593,7 @@ export default function PostsPage() {
                                                     src={heroLeft2.image || HAGUE_PRESET_IMAGES[2].url}
                                                     alt={heroLeft2.title}
                                                     className="w-full h-full object-cover group-hover:scale-103 transition duration-300"
-                                                 onError={handleImageError}/>
+                                                    onError={handleImageError} />
                                             </div>
                                             <span className="text-[11px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                                 {heroLeft2.category || 'POLITICS'}
@@ -647,7 +640,7 @@ export default function PostsPage() {
                                                 src={heroMain.image || HAGUE_PRESET_IMAGES[0].url}
                                                 alt={heroMain.title}
                                                 className="w-full h-full object-cover group-hover:scale-102 transition duration-500"
-                                             onError={handleImageError}/>
+                                                onError={handleImageError} />
                                         </div>
 
                                         <span className="text-[11px] font-bold tracking-widest text-[#0073e6] uppercase mb-2">
@@ -729,7 +722,7 @@ export default function PostsPage() {
                                                     src={post.image || HAGUE_PRESET_IMAGES[3].url}
                                                     alt={post.title}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                                                 onError={handleImageError}/>
+                                                    onError={handleImageError} />
                                             </div>
                                         </article>
                                     ))}
@@ -765,7 +758,7 @@ export default function PostsPage() {
                                                     src={post.image || HAGUE_PRESET_IMAGES[4].url}
                                                     alt={post.title}
                                                     className="w-full h-full object-cover group-hover:scale-103 transition duration-300"
-                                                 onError={handleImageError}/>
+                                                    onError={handleImageError} />
                                             </div>
                                             <span className="text-[11px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                                 {post.category || 'BUSINESS'}
@@ -830,7 +823,7 @@ export default function PostsPage() {
                                                     src={post.image || HAGUE_PRESET_IMAGES[7]?.url || HAGUE_PRESET_IMAGES[4].url}
                                                     alt={post.title}
                                                     className="w-full h-full object-cover group-hover:scale-103 transition duration-300"
-                                                 onError={handleImageError}/>
+                                                    onError={handleImageError} />
                                             </div>
                                             <span className="text-[11px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                                 {post.category || 'TRAVEL'}
@@ -895,7 +888,7 @@ export default function PostsPage() {
                                                 src={politicsMain.image || HAGUE_PRESET_IMAGES[2].url}
                                                 alt={politicsMain.title}
                                                 className="w-full h-full object-cover group-hover:scale-102 transition duration-500"
-                                             onError={handleImageError}/>
+                                                onError={handleImageError} />
                                         </div>
                                         <span className="text-[11px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                             {politicsMain.category || 'POLITICS'}
@@ -946,7 +939,7 @@ export default function PostsPage() {
                                                         src={post.image || HAGUE_PRESET_IMAGES[2].url}
                                                         alt={post.title}
                                                         className="w-full h-full object-cover group-hover:scale-103 transition duration-300"
-                                                     onError={handleImageError}/>
+                                                        onError={handleImageError} />
                                                 </div>
                                                 <span className="text-[10px] font-bold tracking-wider text-[#0073e6] uppercase block">
                                                     {post.category || 'POLITICS'}
@@ -991,12 +984,6 @@ export default function PostsPage() {
                 <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
                     <div className="font-masthead text-3xl font-black tracking-[0.16em] text-black uppercase mb-3 select-none">
                         HAGUE
-                    </div>
-                    <p className="text-[12px] text-[#666666] max-w-md mx-auto mb-4">
-                        Thiết kế bài thực hành Fullstack Lab 3: NextJS + Express theo chuẩn toà soạn báo chí Hague.
-                    </p>
-                    <div className="text-[11px] text-[#888888]">
-                        Nguyễn Thái Tuấn · MSSV: N23DCPT054 · Lớp: D23CQPTUD01-N
                     </div>
                 </div>
             </footer>
@@ -1076,7 +1063,7 @@ export default function PostsPage() {
                                 <div className="flex items-start gap-4">
                                     <div className="w-24 h-20 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 border border-gray-300 relative group">
                                         {editImage ? (
-                                            <img src={editImage} alt="Preview" className="w-full h-full object-cover"  onError={handleImageError}/>
+                                            <img src={editImage} alt="Preview" className="w-full h-full object-cover" onError={handleImageError} />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">Không có ảnh</div>
                                         )}
@@ -1135,7 +1122,7 @@ export default function PostsPage() {
                                                     }`}
                                                 title={img.label}
                                             >
-                                                <img src={img.url} alt={img.label} className="w-full h-full object-cover"  onError={handleImageError}/>
+                                                <img src={img.url} alt={img.label} className="w-full h-full object-cover" onError={handleImageError} />
                                             </div>
                                         ))}
                                     </div>
@@ -1259,7 +1246,7 @@ export default function PostsPage() {
                                 <div className="flex items-start gap-4">
                                     <div className="w-24 h-20 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 border border-gray-300">
                                         {image ? (
-                                            <img src={image} alt="Preview" className="w-full h-full object-cover"  onError={handleImageError}/>
+                                            <img src={image} alt="Preview" className="w-full h-full object-cover" onError={handleImageError} />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">Chưa có ảnh</div>
                                         )}
@@ -1308,7 +1295,7 @@ export default function PostsPage() {
                                                     }`}
                                                 title={img.label}
                                             >
-                                                <img src={img.url} alt={img.label} className="w-full h-full object-cover"  onError={handleImageError}/>
+                                                <img src={img.url} alt={img.label} className="w-full h-full object-cover" onError={handleImageError} />
                                             </div>
                                         ))}
                                     </div>
