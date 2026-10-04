@@ -215,52 +215,56 @@ export default function PostDetailPage() {
         <div className="min-h-screen bg-white text-[#111111] antialiased">
             {/* Header toà soạn */}
             <header className="border-b border-[#e5e5e5] bg-white sticky top-0 z-40 bg-white/95 backdrop-blur-sm">
-                <div className="max-w-[1040px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+                <div className="max-w-[1040px] mx-auto px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
                     <Link
                         href="/posts"
-                        className="text-xs font-semibold text-gray-600 hover:text-black flex items-center gap-1.5 transition"
+                        className="text-xs font-semibold text-gray-600 hover:text-black flex items-center gap-1 transition flex-shrink-0"
                     >
-                        <span>←</span> Trang chủ toà soạn
+                        <span>←</span>
+                        <span className="hidden sm:inline">Trang chủ toà soạn</span>
+                        <span className="sm:hidden">Trang chủ</span>
                     </Link>
 
-                    <Link href="/posts" className="font-masthead text-3xl font-black tracking-[0.16em] text-black uppercase select-none">
+                    <Link href="/posts" className="font-masthead text-2xl sm:text-3xl font-black tracking-[0.14em] sm:tracking-[0.16em] text-black uppercase select-none">
                         HAGUE
                     </Link>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                         <button
                             onClick={handleOpenEdit}
-                            className="text-xs text-gray-700 hover:text-[#0073e6] px-3 py-1.5 rounded border border-gray-300 hover:bg-gray-50 transition cursor-pointer flex items-center gap-1 font-medium"
+                            className="text-[11px] sm:text-xs text-gray-700 hover:text-[#0073e6] px-2 sm:px-3 py-1.5 rounded border border-gray-300 hover:bg-gray-50 transition cursor-pointer flex items-center gap-1 font-medium"
                         >
-                            ✏️ Sửa bài
+                            <span>✏️</span>
+                            <span className="hidden xs:inline">Sửa</span>
                         </button>
                         <button
                             onClick={handleDeletePost}
                             disabled={deletePostMutation.isPending}
-                            className="text-xs text-red-600 hover:text-red-700 px-3 py-1.5 rounded border border-red-200 hover:bg-red-50 transition cursor-pointer"
+                            className="text-[11px] sm:text-xs text-red-600 hover:text-red-700 px-2 sm:px-3 py-1.5 rounded border border-red-200 hover:bg-red-50 transition cursor-pointer flex items-center gap-1 font-medium"
                         >
-                            🗑️ Xoá bài
+                            <span>🗑️</span>
+                            <span className="hidden xs:inline">Xoá</span>
                         </button>
                     </div>
                 </div>
             </header>
 
             {/* Chi tiết bài viết chuẩn toà soạn báo chí */}
-            <main className="max-w-[820px] mx-auto px-4 sm:px-6 py-10 sm:py-12">
+            <main className="max-w-[820px] mx-auto px-4 sm:px-6 py-6 sm:py-10 md:py-12">
                 <article>
-                    <div className="mb-4">
-                        <span className="text-xs font-bold text-[#0073e6] uppercase tracking-widest">
+                    <div className="mb-3 sm:mb-4">
+                        <span className="text-[11px] sm:text-xs font-bold text-[#0073e6] uppercase tracking-widest">
                             {post.category || 'TIN TỨC'}
                         </span>
                     </div>
 
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-[1.18] tracking-tight mb-5">
+                    <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-[1.2] sm:leading-[1.18] tracking-tight mb-4 sm:mb-5">
                         {post.title}
                     </h1>
 
-                    <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500 pb-6 mb-8 border-b border-[#e5e5e5]">
-                        <div className="flex items-center gap-3">
-                            <span className="font-semibold text-black text-sm">{post.author}</span>
+                    <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 text-xs text-gray-500 pb-5 sm:pb-6 mb-6 sm:mb-8 border-b border-[#e5e5e5]">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                            <span className="font-semibold text-black text-xs sm:text-sm">{post.author}</span>
                             <span>·</span>
                             <span>{formatDate(post.createdAt)}</span>
                             <span>·</span>
@@ -269,7 +273,7 @@ export default function PostDetailPage() {
                     </div>
 
                     {post.image && (
-                        <div className="w-full aspect-[16/10] overflow-hidden rounded-md bg-gray-100 mb-8 shadow-sm">
+                        <div className="w-full aspect-[16/10] max-h-[460px] overflow-hidden rounded-md bg-gray-100 mb-6 sm:mb-8 shadow-sm">
                             <img
                                 src={post.image}
                                 alt={post.title}
@@ -279,7 +283,7 @@ export default function PostDetailPage() {
                         </div>
                     )}
 
-                    <div className="text-[17px] leading-[1.8] text-gray-800 whitespace-pre-line space-y-6">
+                    <div className="text-[15px] sm:text-[17px] leading-relaxed sm:leading-[1.8] text-gray-800 whitespace-pre-line space-y-5 sm:space-y-6">
                         {post.content}
                     </div>
                 </article>
@@ -287,18 +291,15 @@ export default function PostDetailPage() {
                 {/* ============================================================== */}
                 {/* NÂNG CAO 4: KHU VỰC BÌNH LUẬN ĐỘC GIẢ (COMMENTS MODULE)        */}
                 {/* ============================================================== */}
-                <section id="comments" className="mt-14 pt-8 border-t-2 border-black">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                <section id="comments" className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t-2 border-black">
+                    <div className="flex items-center justify-between mb-5 sm:mb-6">
+                        <h2 className="text-base sm:text-lg font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
                             <span>💬</span> Ý kiến bạn đọc ({post.comments?.length || 0})
                         </h2>
-                        <span className="text-[11px] text-[#0073e6] font-semibold bg-blue-50 px-2.5 py-1 rounded">
-                            TanStack Query Realtime
-                        </span>
                     </div>
 
                     {/* Form gửi bình luận mới */}
-                    <form onSubmit={handleSendComment} className="p-5 bg-gray-50 rounded-xl border border-gray-200 mb-8 space-y-3.5">
+                    <form onSubmit={handleSendComment} className="p-4 sm:p-5 bg-gray-50 rounded-xl border border-gray-200 mb-6 sm:mb-8 space-y-3 sm:space-y-3.5">
                         <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Gửi phản hồi của bạn
                         </h3>
@@ -308,7 +309,7 @@ export default function PostDetailPage() {
                                 value={commentAuthor}
                                 onChange={(e) => setCommentAuthor(e.target.value)}
                                 placeholder="Họ và tên của bạn..."
-                                className="w-full sm:w-1/2 px-3.5 py-2 rounded-lg border border-gray-300 text-xs focus:outline-none focus:border-[#0073e6] bg-white"
+                                className="w-full sm:w-2/3 md:w-1/2 px-3.5 py-2 rounded-lg border border-gray-300 text-xs sm:text-sm focus:outline-none focus:border-[#0073e6] bg-white"
                                 required
                             />
                         </div>
@@ -317,14 +318,14 @@ export default function PostDetailPage() {
                             value={commentContent}
                             onChange={(e) => setCommentContent(e.target.value)}
                             placeholder="Chia sẻ quan điểm hoặc đóng góp góc nhìn về nội dung bài báo này..."
-                            className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-xs focus:outline-none focus:border-[#0073e6] bg-white resize-none leading-relaxed"
+                            className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-xs sm:text-sm focus:outline-none focus:border-[#0073e6] bg-white resize-none leading-relaxed"
                             required
                         />
                         <div className="flex justify-end">
                             <button
                                 type="submit"
                                 disabled={addCommentMutation.isPending}
-                                className="px-5 py-2 rounded-md bg-[#0073e6] hover:bg-[#0060c0] active:scale-95 text-white text-xs font-bold tracking-wider uppercase transition disabled:opacity-50 cursor-pointer shadow-sm"
+                                className="w-full sm:w-auto px-5 py-2.5 rounded-md bg-[#0073e6] hover:bg-[#0060c0] active:scale-95 text-white text-xs font-bold tracking-wider uppercase transition disabled:opacity-50 cursor-pointer shadow-sm"
                             >
                                 {addCommentMutation.isPending ? 'Đang gửi...' : 'GỬI BÌNH LUẬN'}
                             </button>
@@ -332,21 +333,21 @@ export default function PostDetailPage() {
                     </form>
 
                     {/* Danh sách bình luận */}
-                    <div className="space-y-3.5">
+                    <div className="space-y-3 sm:space-y-3.5">
                         {post.comments && post.comments.length > 0 ? (
                             post.comments.map((comment) => (
-                                <div key={comment.id} className="p-4 bg-white border border-gray-200 rounded-lg flex items-start justify-between gap-4 shadow-2xs">
-                                    <div className="flex items-start gap-3.5">
-                                        <div className="w-9 h-9 rounded-full bg-blue-100 text-[#0073e6] font-bold text-xs flex items-center justify-center flex-shrink-0 uppercase">
+                                <div key={comment.id} className="p-3.5 sm:p-4 bg-white border border-gray-200 rounded-lg flex items-start justify-between gap-3 sm:gap-4 shadow-2xs">
+                                    <div className="flex items-start gap-3 sm:gap-3.5 min-w-0 flex-1">
+                                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-blue-100 text-[#0073e6] font-bold text-xs flex items-center justify-center flex-shrink-0 uppercase">
                                             {comment.author.charAt(0)}
                                         </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs font-bold text-gray-900">{comment.author}</span>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                                <span className="text-xs sm:text-sm font-bold text-gray-900">{comment.author}</span>
                                                 <span className="text-[10px] text-gray-400">·</span>
-                                                <span className="text-[11px] text-gray-400">{formatDate(comment.createdAt)}</span>
+                                                <span className="text-[10px] sm:text-[11px] text-gray-400">{formatDate(comment.createdAt)}</span>
                                             </div>
-                                            <p className="text-xs text-gray-700 mt-1 leading-relaxed whitespace-pre-line">
+                                            <p className="text-xs sm:text-sm text-gray-700 mt-1 leading-relaxed whitespace-pre-line break-words">
                                                 {comment.content}
                                             </p>
                                         </div>
@@ -354,7 +355,7 @@ export default function PostDetailPage() {
                                     <button
                                         onClick={() => handleDeleteComment(comment.id)}
                                         disabled={deleteCommentMutation.isPending}
-                                        className="text-xs text-gray-400 hover:text-red-600 p-1 transition cursor-pointer"
+                                        className="text-xs text-gray-400 hover:text-red-600 p-1 transition cursor-pointer flex-shrink-0"
                                         title="Xoá bình luận này"
                                     >
                                         🗑️
@@ -362,7 +363,7 @@ export default function PostDetailPage() {
                                 </div>
                             ))
                         ) : (
-                            <p className="text-xs text-gray-400 text-center py-8 italic border border-dashed border-gray-200 rounded-lg">
+                            <p className="text-xs text-gray-400 text-center py-6 sm:py-8 italic border border-dashed border-gray-200 rounded-lg">
                                 Chưa có bình luận nào cho bài viết này. Hãy là người đầu tiên để lại ý kiến!
                             </p>
                         )}

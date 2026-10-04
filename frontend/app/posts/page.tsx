@@ -377,9 +377,9 @@ export default function PostsPage() {
             <header className="border-b border-[#e5e5e5] bg-white sticky top-0 z-40 bg-white/95 backdrop-blur-sm">
                 <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
                     {/* Row 1: Left Icons, Centered HAGUE Logo, Right Subscribe button */}
-                    <div className="flex items-center justify-between py-5 sm:py-7">
+                    <div className="flex items-center justify-between py-4 sm:py-7 gap-2">
                         {/* Left Icons */}
-                        <div className="flex items-center gap-3 sm:gap-4 text-[#555555]">
+                        <div className="flex items-center gap-2 sm:gap-4 text-[#555555]">
                             <button
                                 onClick={() => setIsCreateOpen(true)}
                                 className="p-1 hover:text-black transition cursor-pointer"
@@ -404,7 +404,7 @@ export default function PostsPage() {
                         <div className="text-center">
                             <h1
                                 onClick={() => { setSelectedCategory('ALL'); setSearchQuery(''); }}
-                                className="font-masthead text-4xl sm:text-5xl md:text-[54px] font-black tracking-[0.16em] text-black cursor-pointer hover:opacity-95 transition uppercase select-none leading-none"
+                                className="font-masthead text-2xl sm:text-4xl md:text-5xl lg:text-[54px] font-black tracking-[0.12em] sm:tracking-[0.16em] text-black cursor-pointer hover:opacity-95 transition uppercase select-none leading-none"
                             >
                                 HAGUE
                             </h1>
@@ -414,9 +414,10 @@ export default function PostsPage() {
                         <div className="flex items-center justify-end">
                             <button
                                 onClick={() => setIsCreateOpen(true)}
-                                className="px-5 sm:px-6 py-2 sm:py-2.5 rounded-full bg-[#0073e6] hover:bg-[#0060c0] active:scale-95 text-white font-semibold text-xs sm:text-[13px] tracking-wide transition shadow-sm cursor-pointer"
+                                className="px-3 sm:px-6 py-1.5 sm:py-2.5 rounded-full bg-[#0073e6] hover:bg-[#0060c0] active:scale-95 text-white font-semibold text-xs sm:text-[13px] tracking-wide transition shadow-sm cursor-pointer whitespace-nowrap"
                             >
-                                + Viết bài mới
+                                <span className="hidden sm:inline">+ Viết bài mới</span>
+                                <span className="sm:hidden">+ Viết bài</span>
                             </button>
                         </div>
                     </div>
@@ -446,8 +447,8 @@ export default function PostsPage() {
                     )}
 
                     {/* Row 2: Centered Sub-navigation Bar */}
-                    <nav className="border-t border-[#e5e5e5] py-3 overflow-x-auto scrollbar-none">
-                        <ul className="flex items-center justify-center min-w-max gap-5 sm:gap-7 text-[13px] font-medium text-[#444444]">
+                    <nav className="border-t border-[#e5e5e5] py-2.5 sm:py-3 overflow-x-auto scrollbar-none">
+                        <ul className="flex items-center justify-start md:justify-center min-w-max gap-4 sm:gap-7 text-xs sm:text-[13px] font-medium text-[#444444] px-1">
                             {NAV_CATEGORIES.map((cat) => (
                                 <li key={cat.id}>
                                     <button
@@ -475,7 +476,7 @@ export default function PostsPage() {
             {/* ============================================================== */}
             {/* MAIN CONTAINER                                                 */}
             {/* ============================================================== */}
-            <main className="max-w-[1240px] mx-auto px-4 sm:px-6 py-8">
+            <main className="max-w-[1240px] mx-auto px-3.5 sm:px-6 py-6 sm:py-8">
                 {loading ? (
                     <div className="py-24 text-center">
                         <div className="inline-block w-8 h-8 border-3 border-gray-200 border-t-[#0073e6] rounded-full animate-spin mb-3"></div>
@@ -622,9 +623,9 @@ export default function PostsPage() {
                         {/* ============================================================== */}
                         {/* 2. HERO FEATURED SECTION (CHUẨN 100% 3 CỘT HAGUE)             */}
                         {/* ============================================================== */}
-                        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-12 border-b border-[#e5e5e5]">
-                            {/* CỘT TRÁI (3 cols) - 2 BÀI XẾP TẦNG */}
-                            <div className="lg:col-span-3 flex flex-col justify-between gap-8">
+                        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 pb-10 sm:pb-12 border-b border-[#e5e5e5]">
+                            {/* CỘT TRÁI (3 cols) - 2 BÀI XẾP TẦNG (TRÊN TABLET THÀNH 2 CỘT) */}
+                            <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-col justify-between gap-6 lg:gap-8">
                                 {heroLeft1 && (
                                     <article className="group flex flex-col justify-between h-full">
                                         <div>
@@ -1256,7 +1257,7 @@ export default function PostsPage() {
                                     <span className="text-[11px] text-blue-600 font-medium">Hỗ trợ ảnh từ máy tính</span>
                                 </div>
 
-                                <div className="flex items-start gap-4">
+                                <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
                                     <div className="w-24 h-20 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 border border-gray-300 relative group">
                                         {editImage ? (
                                             <img src={editImage} alt="Preview" className="w-full h-full object-cover" onError={handleImageError} />
@@ -1265,7 +1266,7 @@ export default function PostsPage() {
                                         )}
                                     </div>
 
-                                    <div className="flex-1 space-y-2">
+                                    <div className="flex-1 space-y-2 w-full">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <input
                                                 ref={editFileInputRef}
@@ -1309,7 +1310,7 @@ export default function PostsPage() {
                                     <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1.5">
                                         Hoặc chọn nhanh từ thư viện toà soạn:
                                     </span>
-                                    <div className="grid grid-cols-6 gap-1.5">
+                                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
                                         {HAGUE_PRESET_IMAGES.map((img, idx) => (
                                             <div
                                                 key={idx}
@@ -1439,7 +1440,7 @@ export default function PostsPage() {
                                     <span className="text-[11px] text-blue-600 font-medium">Chọn từ máy tính hoặc thư viện</span>
                                 </div>
 
-                                <div className="flex items-start gap-4">
+                                <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
                                     <div className="w-24 h-20 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 border border-gray-300">
                                         {image ? (
                                             <img src={image} alt="Preview" className="w-full h-full object-cover" onError={handleImageError} />
@@ -1448,8 +1449,8 @@ export default function PostsPage() {
                                         )}
                                     </div>
 
-                                    <div className="flex-1 space-y-2">
-                                        <div className="flex items-center gap-2">
+                                    <div className="flex-1 space-y-2 w-full">
+                                        <div className="flex flex-wrap items-center gap-2">
                                             <input
                                                 ref={createFileInputRef}
                                                 type="file"
@@ -1482,7 +1483,7 @@ export default function PostsPage() {
                                     <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1.5">
                                         Hoặc chọn nhanh từ toà soạn Hague:
                                     </span>
-                                    <div className="grid grid-cols-6 gap-1.5">
+                                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
                                         {HAGUE_PRESET_IMAGES.map((img, idx) => (
                                             <div
                                                 key={idx}
@@ -1537,42 +1538,42 @@ export default function PostsPage() {
             {/* MODAL 3: ĐỌC BÀI BÁO (READER MODE) - Z-INDEX 70                 */}
             {/* ============================================================== */}
             {readingPost && (
-                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
-                    <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden">
-                        <div className="flex items-center justify-between px-6 py-3 border-b border-[#e5e5e5] bg-gray-50">
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
+                    <div className="bg-white rounded-xl max-w-2xl w-full max-h-[92vh] sm:max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden">
+                        <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3 border-b border-[#e5e5e5] bg-gray-50 flex-wrap gap-2">
                             <span className="text-xs font-bold text-[#0073e6] tracking-wider uppercase">
                                 {readingPost.category || 'ARTICLE'}
                             </span>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                                 <Link
                                     href={`/posts/${readingPost.id}`}
-                                    className="px-3 py-1 text-xs font-semibold text-blue-700 hover:text-blue-900 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 transition cursor-pointer flex items-center gap-1"
+                                    className="px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-semibold text-blue-700 hover:text-blue-900 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 transition cursor-pointer flex items-center gap-1"
                                     title="Xem chi tiết tại trang riêng /posts/:id"
                                 >
-                                    ↗️ Trang riêng
+                                    ↗️ <span className="hidden xs:inline">Trang riêng</span>
                                 </Link>
                                 <button
                                     onClick={(e) => handleOpenEdit(readingPost, e)}
-                                    className="px-3 py-1 text-xs font-medium text-gray-700 hover:text-[#0073e6] bg-white border border-gray-300 rounded hover:bg-gray-50 transition cursor-pointer"
+                                    className="px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-medium text-gray-700 hover:text-[#0073e6] bg-white border border-gray-300 rounded hover:bg-gray-50 transition cursor-pointer"
                                 >
-                                    ✏️ Sửa bài
+                                    ✏️ <span className="hidden xs:inline">Sửa bài</span>
                                 </button>
                                 <button
                                     onClick={(e) => handleDeletePost(readingPost.id, e)}
-                                    className="px-3 py-1 text-xs font-medium text-red-600 hover:text-red-700 bg-white border border-red-200 rounded hover:bg-red-50 transition cursor-pointer"
+                                    className="px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-medium text-red-600 hover:text-red-700 bg-white border border-red-200 rounded hover:bg-red-50 transition cursor-pointer"
                                 >
-                                    🗑️ Xoá
+                                    🗑️ <span className="hidden xs:inline">Xoá</span>
                                 </button>
                                 <button
                                     onClick={() => setReadingPost(null)}
-                                    className="text-gray-400 hover:text-gray-600 text-lg font-bold p-1 ml-2 cursor-pointer"
+                                    className="text-gray-400 hover:text-gray-600 text-lg font-bold p-1 cursor-pointer"
                                 >
                                     ✕
                                 </button>
                             </div>
                         </div>
 
-                        <div className="p-6 sm:p-8 overflow-y-auto">
+                        <div className="p-4 sm:p-6 md:p-8 overflow-y-auto">
                             <h2 className="text-2xl sm:text-3xl font-bold text-[#111111] leading-tight mb-3">
                                 {readingPost.title}
                             </h2>
