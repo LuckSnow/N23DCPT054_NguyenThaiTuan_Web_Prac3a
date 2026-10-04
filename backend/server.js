@@ -199,7 +199,7 @@ let posts = [
     content: 'Triển khai đồng bộ dữ liệu dân cư và dịch vụ công trực tuyến mức độ 4 giúp tiết kiệm hàng ngàn tỷ đồng và nâng cao độ hài lòng của công dân.',
     author: 'Ban Cải Cách Hành Chính',
     category: 'POLITICS',
-    image: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=600&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80',
     createdAt: '2026-10-04T12:15:00.000Z'
   },
   // 19. POLITICS 3
