@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 interface Post {
   id: number;
@@ -21,8 +22,8 @@ export default function PostsPage() {
     try {
       const res = await api.get('/api/posts');
       setPosts(res.data);
-    } catch (err) {
-      console.error('Lỗi khi tải danh sách bài viết:', err);
+    } catch {
+      toast.error('Không thể kết nối server!');
     }
   };
 
@@ -34,19 +35,20 @@ export default function PostsPage() {
     e.preventDefault();
     try {
       await api.post('/api/posts', { title, content, author });
+      toast.success('Đăng bài thành công!');
       setTitle('');
       setContent('');
       setAuthor('');
       fetchPosts();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
-      console.error(error.response?.data?.error || 'Có lỗi xảy ra khi tạo bài viết');
+      toast.error(error.response?.data?.error || 'Có lỗi xảy ra!');
     }
   };
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Quản lý bài viết (Axios)</h1>
+      <h1 className="text-2xl font-bold mb-4">Quản lý bài viết</h1>
       <form onSubmit={handleSubmit} className="space-y-3 mb-6">
         <input
           value={title}
