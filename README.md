@@ -57,8 +57,6 @@ Dự án triển khai đầy đủ các yêu cầu kỹ thuật theo tài liệu
 fullstack-blog/
 ├── .gitignore                                     # Tệp cấu hình bỏ qua thư mục/tệp nhạy cảm khi đẩy lên Git
 ├── README.md                                      # Tài liệu hướng dẫn và thông tin đồ án
-├── Lab3_nhom2.pdf                                 # Tài liệu hướng dẫn thực hành Lab 3
-├── Hague _ Clean News Website Inspiration.jpg    # Ảnh mẫu thiết kế giao diện toà soạn Hague
 │
 ├── backend/                                       # Máy chủ RESTful API (Node.js & Express)
 │   ├── server.js                                  # Khởi tạo Express, cấu hình CORS, CRUD bài viết (/api/posts)
