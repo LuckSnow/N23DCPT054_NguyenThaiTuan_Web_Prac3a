@@ -46,6 +46,24 @@ export default function PostsPage() {
     }
   };
 
+  const handleDelete = async (id: number) => {
+    // 1. Xác nhận người dùng
+    if (!confirm('Bạn chắc chắn muốn xoá bài viết này?')) return;
+
+    try {
+      // 2. Gọi API xoá
+      await api.delete(`/api/posts/${id}`);
+      // 3. Cập nhật state NGAY (optimistic update) — không cần gọi lại API, UX nhanh hơn
+      setPosts((prev) => prev.filter((p) => p.id !== id));
+      // 4. Hiển thị toast thành công
+      toast.success('Đã xoá bài viết', { icon: '🗑️' });
+    } catch {
+      toast.error('Xoá thất bại, thử lại!');
+      // Rollback: gọi lại server để đồng bộ dữ liệu
+      fetchPosts();
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Quản lý bài viết</h1>
@@ -81,11 +99,22 @@ export default function PostsPage() {
 
       <div className="space-y-3">
         {posts.map((p) => (
-          <div key={p.id} className="border p-4 rounded shadow-sm">
-            <h3 className="font-bold text-lg">{p.title}</h3>
-            <p className="text-gray-600">
-              {p.author} — {p.content}
-            </p>
+          <div
+            key={p.id}
+            className="flex justify-between items-center p-3 border rounded mb-2 shadow-sm"
+          >
+            <div>
+              <h3 className="font-bold">{p.title}</h3>
+              <p className="text-sm text-gray-500">
+                {p.author} · {p.content}
+              </p>
+            </div>
+            <button
+              onClick={() => handleDelete(p.id)}
+              className="text-red-500 hover:text-red-700 text-sm font-medium transition"
+            >
+              Xoá
+            </button>
           </div>
         ))}
       </div>

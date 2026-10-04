@@ -40,6 +40,16 @@ app.post('/api/posts', (req, res) => {
   res.status(201).json(newPost);
 });
 
+app.delete('/api/posts/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const index = posts.findIndex(p => p.id === id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Không tìm thấy bài viết' });
+  }
+  posts.splice(index, 1);
+  res.json({ message: 'Đã xoá thành công' });
+});
+
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Backend chạy tại port :${PORT}`);
